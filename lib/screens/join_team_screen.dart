@@ -30,7 +30,7 @@ class _JoinTeamScreenState extends ConsumerState<JoinTeamScreen> {
       final teams = ref.read(teamProvider).myTeams;
       final newTeam = teams.firstWhere((t) => t.teamCode == code);
       ref.read(teamProvider.notifier).selectTeam(newTeam);
-      context.go('/dashboard/\${newTeam.id}');
+      context.go('/dashboard/${newTeam.id}');
     } else {
       if (mounted) {
         final error = ref.read(teamProvider).error ?? 'Team not found';

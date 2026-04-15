@@ -16,11 +16,41 @@ class ShooterSelectorScreen extends ConsumerStatefulWidget {
 
 class _ShooterSelectorScreenState extends ConsumerState<ShooterSelectorScreen> {
   List<TeamMember?> selectedShooters = List.filled(5, null);
+  bool _isLoadingMembers = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await ref.read(teamProvider.notifier).loadTeamMembers(widget.teamId);
+      if (mounted) {
+        setState(() {
+          _isLoadingMembers = false;
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final members = ref.read(teamProvider).currentTeamMembers;
+    final teamState = ref.watch(teamProvider);
+    final members = teamState.currentTeamMembers;
     int selectedCount = selectedShooters.where((s) => s != null).length;
+
+    if (_isLoadingMembers) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (members.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Select Shooters')),
+        body: const Center(
+          child: Text('No team members found for this team.'),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(title: const Text('Select Shooters')),
@@ -41,7 +71,7 @@ class _ShooterSelectorScreenState extends ConsumerState<ShooterSelectorScreen> {
                     padding: const EdgeInsets.only(bottom: 12.0),
                     child: DropdownButtonFormField<TeamMember>(
                       decoration: InputDecoration(
-                        labelText: 'Shooter \${index + 1}',
+                        labelText: 'Shooter ${index + 1}',
                         border: const OutlineInputBorder(),
                       ),
                       value: selectedShooters[index],
@@ -90,7 +120,7 @@ class _ShooterSelectorScreenState extends ConsumerState<ShooterSelectorScreen> {
                             .read(scoringProvider.notifier)
                             .setupRound(type, finalShooters);
                         context.push(
-                          '/dashboard/\${widget.teamId}/score/round',
+                          '/dashboard/${widget.teamId}/score/round',
                         );
                       }
                     : null,

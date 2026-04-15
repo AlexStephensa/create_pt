@@ -45,7 +45,7 @@ class ScoreTab extends ConsumerWidget {
 
   void _selectType(BuildContext context, WidgetRef ref, String teamId, String type) {
     ref.read(scoringProvider.notifier).setupRound(type, []);
-    context.push('/dashboard/\$teamId/score/type');
+    context.push('/dashboard/$teamId/score/type');
   }
 }
 

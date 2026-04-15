@@ -55,7 +55,16 @@ class RoundNotifier extends StateNotifier<RoundState> {
         ],
       );
 
-      final rounds = roundsResult.documents.map((d) => Round.fromMap(d.data)).toList();
+      final rounds = roundsResult.documents
+          .map((d) {
+            try {
+              return Round.fromMap(d.data);
+            } catch (_) {
+              return null;
+            }
+          })
+          .whereType<Round>()
+          .toList();
 
       final roundsIds = rounds.map((e) => e.id).toList();
       
@@ -67,7 +76,16 @@ class RoundNotifier extends StateNotifier<RoundState> {
           collectionId: AppwriteConstants.roundScoresCollection,
           queries: [Query.equal('round_id', roundsIds)],
         );
-        allScores = scoresResult.documents.map((d) => RoundScore.fromMap(d.data)).toList();
+        allScores = scoresResult.documents
+            .map((d) {
+              try {
+                return RoundScore.fromMap(d.data);
+              } catch (_) {
+                return null;
+              }
+            })
+            .whereType<RoundScore>()
+            .toList();
       }
 
       state = state.copyWith(

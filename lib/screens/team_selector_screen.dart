@@ -30,7 +30,7 @@ class _TeamSelectorScreenState extends ConsumerState<TeamSelectorScreen> {
           context.go('/team-gate');
         } else if (next.myTeams.length == 1) {
           ref.read(teamProvider.notifier).selectTeam(next.myTeams.first);
-          context.go('/dashboard/\${next.myTeams.first.id}');
+          context.go('/dashboard/${next.myTeams.first.id}');
         }
       }
     });
@@ -55,7 +55,7 @@ class _TeamSelectorScreenState extends ConsumerState<TeamSelectorScreen> {
                       trailing: const Icon(Icons.arrow_forward_ios),
                       onTap: () {
                         ref.read(teamProvider.notifier).selectTeam(team);
-                        context.go('/dashboard/\${team.id}');
+                        context.go('/dashboard/${team.id}');
                       },
                     );
                   },

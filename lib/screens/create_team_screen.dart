@@ -32,7 +32,7 @@ class _CreateTeamScreenState extends ConsumerState<CreateTeamScreen> {
       // For simplicity, just select the last one or sort by newest.
       final newTeam = teams.last;
       ref.read(teamProvider.notifier).selectTeam(newTeam);
-      context.go('/dashboard/\${newTeam.id}');
+      context.go('/dashboard/${newTeam.id}');
     } else {
       if (mounted) {
         final error = ref.read(teamProvider).error ?? 'Error creating team';

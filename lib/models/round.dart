@@ -14,12 +14,19 @@ class Round {
   });
 
   factory Round.fromMap(Map<String, dynamic> map) {
+    final createdAtValue = map['created_at'] ?? map['\$createdAt'];
+    final createdAt = createdAtValue is String
+        ? DateTime.parse(createdAtValue)
+        : createdAtValue is DateTime
+            ? createdAtValue
+            : DateTime.fromMillisecondsSinceEpoch(0);
+
     return Round(
       id: map['\$id'] ?? '',
       teamId: map['team_id'] ?? '',
       scoredBy: map['scored_by'] ?? '',
       roundType: map['round_type'] ?? '',
-      createdAt: DateTime.parse(map['created_at']),
+      createdAt: createdAt,
     );
   }
 

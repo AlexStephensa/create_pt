@@ -38,7 +38,7 @@ class _TeamDashboardScreenState extends ConsumerState<TeamDashboardScreen> {
     }
 
     final tabs = [
-      const HomeTab(),
+      HomeTab(teamId: widget.teamId),
       const ScoreTab(),
       const MembersTab(),
       const LeaderboardTab(),

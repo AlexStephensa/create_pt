@@ -5,7 +5,9 @@ import '../../providers/round_provider.dart';
 import 'package:intl/intl.dart';
 
 class HomeTab extends ConsumerWidget {
-  const HomeTab({super.key});
+  final String teamId;
+
+  const HomeTab({super.key, required this.teamId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -41,9 +43,10 @@ class HomeTab extends ConsumerWidget {
 
     return RefreshIndicator(
       onRefresh: () async {
-        // ref.read(roundProvider.notifier).loadRounds(teamId);
+        await ref.read(roundProvider.notifier).loadRounds(teamId);
       },
       child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
         children: [
           Card(
@@ -73,7 +76,15 @@ class HomeTab extends ConsumerWidget {
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          ...roundState.teamRounds.map((r) {
+          if (roundState.teamRounds.isEmpty)
+            const Card(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text('No rounds yet.'),
+              ),
+            )
+          else
+            ...roundState.teamRounds.map((r) {
             final myScore = roundState.teamRoundScores
                 .where((s) => s.roundId == r.id && s.userId == user.$id)
                 .firstOrNull;
@@ -97,7 +108,7 @@ class HomeTab extends ConsumerWidget {
                     : const Text('-', style: TextStyle(fontSize: 18)),
               ),
             );
-          }),
+              }),
         ],
       ),
     );

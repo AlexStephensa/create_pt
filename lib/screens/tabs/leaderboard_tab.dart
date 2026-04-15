@@ -86,6 +86,7 @@ class _LeaderboardTabState extends ConsumerState<LeaderboardTab> {
               }
             },
             child: ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
               itemCount: ranks.length,
               itemBuilder: (context, index) {
                 final r = ranks[index];
