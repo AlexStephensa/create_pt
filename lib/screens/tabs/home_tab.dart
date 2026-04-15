@@ -21,6 +21,7 @@ class HomeTab extends ConsumerWidget {
     int sHits = 0, sMiss = 0;
     int dHits = 0, dMiss = 0;
     int hHits = 0, hMiss = 0;
+    List<bool> flags = [true];
 
     for (var score in roundState.teamRoundScores) {
       if (score.userId == user.$id) {
@@ -38,8 +39,11 @@ class HomeTab extends ConsumerWidget {
           hHits += score.hits;
           hMiss += score.misses;
         }
+      } else {
+        flags.add(false);
       }
     }
+    print('$flags');
 
     return RefreshIndicator(
       onRefresh: () async {

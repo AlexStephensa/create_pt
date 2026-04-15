@@ -44,6 +44,8 @@ class RoundNotifier extends StateNotifier<RoundState> {
 
   RoundNotifier(this._appwriteService) : super(RoundState());
 
+
+
   Future<void> loadRounds(String teamId) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
