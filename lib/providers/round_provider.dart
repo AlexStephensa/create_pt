@@ -1,4 +1,5 @@
 import 'package:appwrite/appwrite.dart';
+import 'package:appwrite/models.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants.dart';
 import '../models/round.dart';
@@ -41,15 +42,37 @@ class RoundState {
 
 class RoundNotifier extends StateNotifier<RoundState> {
   final AppwriteService _appwriteService;
+  static const int _maxEqualValuesPerQuery = 100;
 
   RoundNotifier(this._appwriteService) : super(RoundState());
 
+  Future<List<Document>> _fetchAllDocuments({
+    required String collectionId,
+    List<String> queries = const [],
+    int batchSize = 100,
+  }) async {
+    final allDocuments = <Document>[];
+    var offset = 0;
 
+    while (true) {
+      final result = await _appwriteService.listDocuments(
+        collectionId: collectionId,
+        queries: [...queries, Query.limit(batchSize), Query.offset(offset)],
+      );
+
+      allDocuments.addAll(result.documents);
+
+      if (result.documents.length < batchSize) break;
+      offset += batchSize;
+    }
+
+    return allDocuments;
+  }
 
   Future<void> loadRounds(String teamId) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final roundsResult = await _appwriteService.listDocuments(
+      final roundDocuments = await _fetchAllDocuments(
         collectionId: AppwriteConstants.roundsCollection,
         queries: [
           Query.equal('team_id', teamId),
@@ -57,10 +80,10 @@ class RoundNotifier extends StateNotifier<RoundState> {
         ],
       );
 
-      final rounds = roundsResult.documents
+      final rounds = roundDocuments
           .map((d) {
             try {
-              return Round.fromMap(d.data);
+              return Round.fromMap({...d.data, '\$id': d.$id});
             } catch (_) {
               return null;
             }
@@ -69,19 +92,29 @@ class RoundNotifier extends StateNotifier<RoundState> {
           .toList();
 
       final roundsIds = rounds.map((e) => e.id).toList();
-      
+
       List<RoundScore> allScores = [];
       if (roundsIds.isNotEmpty) {
-        // Appwrite limit is usually 100 per query, maybe we do batches for a real app.
-        // For simplicity, we just fetch scores for these rounds.
-        final scoresResult = await _appwriteService.listDocuments(
-          collectionId: AppwriteConstants.roundScoresCollection,
-          queries: [Query.equal('round_id', roundsIds)],
-        );
-        allScores = scoresResult.documents
+        final scoreDocuments = <Document>[];
+
+        for (var i = 0; i < roundsIds.length; i += _maxEqualValuesPerQuery) {
+          final end = (i + _maxEqualValuesPerQuery < roundsIds.length)
+              ? i + _maxEqualValuesPerQuery
+              : roundsIds.length;
+          final roundIdsChunk = roundsIds.sublist(i, end);
+
+          final chunkDocuments = await _fetchAllDocuments(
+            collectionId: AppwriteConstants.roundScoresCollection,
+            queries: [Query.equal('round_id', roundIdsChunk)],
+          );
+
+          scoreDocuments.addAll(chunkDocuments);
+        }
+
+        allScores = scoreDocuments
             .map((d) {
               try {
-                return RoundScore.fromMap(d.data);
+                return RoundScore.fromMap({...d.data, '\$id': d.$id});
               } catch (_) {
                 return null;
               }

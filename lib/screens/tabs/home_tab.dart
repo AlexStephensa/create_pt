@@ -21,29 +21,28 @@ class HomeTab extends ConsumerWidget {
     int sHits = 0, sMiss = 0;
     int dHits = 0, dMiss = 0;
     int hHits = 0, hMiss = 0;
-    List<bool> flags = [true];
 
-    for (var score in roundState.teamRoundScores) {
-      if (score.userId == user.$id) {
-        final round = roundState.teamRounds.firstWhere(
-          (r) => r.id == score.roundId,
-          orElse: () => throw Exception(),
-        );
-        if (round.roundType == 'singles') {
-          sHits += score.hits;
-          sMiss += score.misses;
-        } else if (round.roundType == 'doubles') {
-          dHits += score.hits;
-          dMiss += score.misses;
-        } else if (round.roundType == 'handicap') {
-          hHits += score.hits;
-          hMiss += score.misses;
-        }
-      } else {
-        flags.add(false);
+    final roundTypeById = {
+      for (final round in roundState.teamRounds) round.id: round.roundType,
+    };
+
+    for (final score in roundState.teamRoundScores) {
+      if (score.userId != user.$id) continue;
+
+      final roundType = roundTypeById[score.roundId];
+      if (roundType == null) continue;
+
+      if (roundType == 'singles') {
+        sHits += score.hits;
+        sMiss += score.misses;
+      } else if (roundType == 'doubles') {
+        dHits += score.hits;
+        dMiss += score.misses;
+      } else if (roundType == 'handicap') {
+        hHits += score.hits;
+        hMiss += score.misses;
       }
     }
-    print('$flags');
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -89,30 +88,30 @@ class HomeTab extends ConsumerWidget {
             )
           else
             ...roundState.teamRounds.map((r) {
-            final myScore = roundState.teamRoundScores
-                .where((s) => s.roundId == r.id && s.userId == user.$id)
-                .firstOrNull;
-            return Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              child: ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Colors.orange.withOpacity(0.2),
-                  child: Icon(Icons.sports_score, color: Colors.orange[400]),
+              final myScore = roundState.teamRoundScores
+                  .where((s) => s.roundId == r.id && s.userId == user.$id)
+                  .firstOrNull;
+              return Card(
+                margin: const EdgeInsets.only(bottom: 12),
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.orange.withOpacity(0.2),
+                    child: Icon(Icons.sports_score, color: Colors.orange[400]),
+                  ),
+                  title: Text(r.roundType.toUpperCase()),
+                  subtitle: Text(DateFormat.yMMMd().format(r.createdAt)),
+                  trailing: myScore != null
+                      ? Text(
+                          '${myScore.hits} / ${myScore.totalShots}',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
+                      : const Text('-', style: TextStyle(fontSize: 18)),
                 ),
-                title: Text(r.roundType.toUpperCase()),
-                subtitle: Text(DateFormat.yMMMd().format(r.createdAt)),
-                trailing: myScore != null
-                    ? Text(
-                        '${myScore.hits} / ${myScore.totalShots}',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      )
-                    : const Text('-', style: TextStyle(fontSize: 18)),
-              ),
-            );
-              }),
+              );
+            }),
         ],
       ),
     );
