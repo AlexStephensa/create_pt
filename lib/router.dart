@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -14,14 +15,39 @@ import 'screens/scoring/round_summary_screen.dart';
 
 import 'providers/auth_provider.dart';
 
+/// A simple [ChangeNotifier] that the router uses as its [refreshListenable].
+/// Calling [notify] tells the router to re-evaluate its redirect logic
+/// without being destroyed and recreated.
+class RouterNotifier extends ChangeNotifier {
+  void notify() => notifyListeners();
+}
+
+final _routerNotifierProvider = Provider<RouterNotifier>((ref) {
+  final notifier = RouterNotifier();
+
+  // Listen to auth state changes and tell the router to re-evaluate redirects.
+  // Using ref.listen (not ref.watch) so the provider itself isn't invalidated.
+  ref.listen<AuthState>(authProvider, (_, __) {
+    notifier.notify();
+  });
+
+  return notifier;
+});
+
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authProvider);
+  final routerNotifier = ref.watch(_routerNotifierProvider);
 
   return GoRouter(
     initialLocation: '/',
+    refreshListenable: routerNotifier,
     redirect: (context, state) {
+      // Read (not watch) the current auth state inside the redirect callback.
+      final authState = ref.read(authProvider);
       final isAuthRoute = state.matchedLocation == '/auth' || state.matchedLocation == '/';
       final isAuth = authState.user != null;
+
+      // Still loading the initial auth check — don't redirect yet.
+      if (authState.isLoading) return null;
 
       if (!isAuth && !isAuthRoute) {
         return '/';

@@ -9,6 +9,9 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   return AuthNotifier(appwriteService);
 });
 
+// Sentinel value to distinguish "not passed" from "explicitly passed null"
+const _undefined = Object();
+
 class AuthState {
   final bool isLoading;
   final User? user;
@@ -16,11 +19,11 @@ class AuthState {
 
   AuthState({this.isLoading = false, this.user, this.error});
 
-  AuthState copyWith({bool? isLoading, User? user, String? error}) {
+  AuthState copyWith({bool? isLoading, Object? user = _undefined, Object? error = _undefined}) {
     return AuthState(
       isLoading: isLoading ?? this.isLoading,
-      user: user,
-      error: error ?? this.error,
+      user: user == _undefined ? this.user : user as User?,
+      error: error == _undefined ? this.error : error as String?,
     );
   }
 }
@@ -28,7 +31,7 @@ class AuthState {
 class AuthNotifier extends StateNotifier<AuthState> {
   final AppwriteService _appwriteService;
 
-  AuthNotifier(this._appwriteService) : super(AuthState()) {
+  AuthNotifier(this._appwriteService) : super(AuthState(isLoading: true)) {
     checkAuth();
   }
 

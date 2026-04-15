@@ -34,7 +34,7 @@ class _RoundSummaryScreenState extends ConsumerState<RoundSummaryScreen> {
     if (mounted) {
       setState(() => _isSaving = false);
       if (success) {
-        context.go('/dashboard/\${widget.teamId}');
+        context.go('/dashboard/${widget.teamId}');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to save round')));
       }
@@ -52,7 +52,7 @@ class _RoundSummaryScreenState extends ConsumerState<RoundSummaryScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(c);
-              context.go('/dashboard/\${widget.teamId}');
+              context.go('/dashboard/${widget.teamId}');
             },
             child: const Text('Discard', style: TextStyle(color: Colors.red)),
           ),
@@ -79,8 +79,8 @@ class _RoundSummaryScreenState extends ConsumerState<RoundSummaryScreen> {
                 return Card(
                   child: ListTile(
                     title: Text(s.displayName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                    subtitle: Text('\${s.hits} Hits / \${s.misses} Misses'),
-                    trailing: Text('\${pct.toStringAsFixed(1)}%', style: const TextStyle(fontSize: 20, color: Colors.orange)),
+                    subtitle: Text('${s.hits} Hits / ${s.misses} Misses'),
+                    trailing: Text('${pct.toStringAsFixed(1)}%', style: const TextStyle(fontSize: 20, color: Colors.orange)),
                   ),
                 );
               },

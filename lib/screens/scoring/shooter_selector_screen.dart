@@ -10,7 +10,8 @@ class ShooterSelectorScreen extends ConsumerStatefulWidget {
   const ShooterSelectorScreen({super.key, required this.teamId});
 
   @override
-  ConsumerState<ShooterSelectorScreen> createState() => _ShooterSelectorScreenState();
+  ConsumerState<ShooterSelectorScreen> createState() =>
+      _ShooterSelectorScreenState();
 }
 
 class _ShooterSelectorScreenState extends ConsumerState<ShooterSelectorScreen> {
@@ -27,7 +28,10 @@ class _ShooterSelectorScreenState extends ConsumerState<ShooterSelectorScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            const Text('Assign shooters to stations (Max 5). Shooter 1 is required. At least 2 required to start a round.', style: TextStyle(color: Colors.grey)),
+            const Text(
+              'Assign shooters to stations (Max 5). Shooter 1 is required.',
+              style: TextStyle(color: Colors.grey),
+            ),
             const SizedBox(height: 16),
             Expanded(
               child: ListView.builder(
@@ -42,16 +46,24 @@ class _ShooterSelectorScreenState extends ConsumerState<ShooterSelectorScreen> {
                       ),
                       value: selectedShooters[index],
                       items: [
-                        const DropdownMenuItem<TeamMember>(value: null, child: Text('None')),
+                        const DropdownMenuItem<TeamMember>(
+                          value: null,
+                          child: Text('None'),
+                        ),
                         ...members.map((m) {
                           // Prevent selecting same person twice
-                          bool isSelectedElsewhere = selectedShooters.any((s) => s?.id == m.id) && selectedShooters[index]?.id != m.id;
+                          bool isSelectedElsewhere =
+                              selectedShooters.any((s) => s?.id == m.id) &&
+                              selectedShooters[index]?.id != m.id;
                           return DropdownMenuItem(
                             value: m,
                             enabled: !isSelectedElsewhere,
-                            child: Text(m.displayName + (isSelectedElsewhere ? ' (Selected)' : '')),
+                            child: Text(
+                              m.displayName +
+                                  (isSelectedElsewhere ? ' (Selected)' : ''),
+                            ),
                           );
-                        })
+                        }),
                       ],
                       onChanged: (val) {
                         setState(() {
@@ -67,16 +79,31 @@ class _ShooterSelectorScreenState extends ConsumerState<ShooterSelectorScreen> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: (selectedCount >= 2 && selectedShooters[0] != null) ? () {
-                  final finalShooters = selectedShooters.where((s) => s != null).cast<TeamMember>().toList();
-                  final type = ref.read(scoringProvider).roundType;
-                  ref.read(scoringProvider.notifier).setupRound(type, finalShooters);
-                  context.push('/dashboard/\${widget.teamId}/score/round');
-                } : null,
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, foregroundColor: Colors.white),
-                child: const Text('Start Round', style: TextStyle(fontSize: 18)),
+                onPressed: (selectedCount >= 1 && selectedShooters[0] != null)
+                    ? () {
+                        final finalShooters = selectedShooters
+                            .where((s) => s != null)
+                            .cast<TeamMember>()
+                            .toList();
+                        final type = ref.read(scoringProvider).roundType;
+                        ref
+                            .read(scoringProvider.notifier)
+                            .setupRound(type, finalShooters);
+                        context.push(
+                          '/dashboard/\${widget.teamId}/score/round',
+                        );
+                      }
+                    : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text(
+                  'Start Round',
+                  style: TextStyle(fontSize: 18),
+                ),
               ),
-            )
+            ),
           ],
         ),
       ),

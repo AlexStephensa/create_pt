@@ -3,11 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'router.dart';
 
 void main() {
-  runApp(
-    const ProviderScope(
-      child: TrapScoreApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: TrapScoreApp()));
 }
 
 class TrapScoreApp extends ConsumerWidget {
@@ -19,6 +15,7 @@ class TrapScoreApp extends ConsumerWidget {
 
     return MaterialApp.router(
       title: 'TrapScore',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.orange,

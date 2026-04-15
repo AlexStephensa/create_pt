@@ -99,7 +99,7 @@ class _LeaderboardTabState extends ConsumerState<LeaderboardTab> {
                                     ? Colors.brown[300]
                                     : Colors.blueGrey)),
                     child: Text(
-                      '\${index + 1}',
+                      '${index + 1}',
                       style: const TextStyle(color: Colors.black),
                     ),
                   ),
@@ -107,9 +107,9 @@ class _LeaderboardTabState extends ConsumerState<LeaderboardTab> {
                     r['name'],
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  subtitle: Text('\${r[hits]} / \${r[total]} hits'),
+                  subtitle: Text('${r['hits']} / ${r['total']} hits'),
                   trailing: Text(
-                    '\${r[pct].toStringAsFixed(1)}%',
+                    '${(r['pct'] as double).toStringAsFixed(1)}%',
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,

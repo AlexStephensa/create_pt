@@ -16,7 +16,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController();
-  
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -41,7 +41,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     if (!success && mounted) {
       final error = ref.read(authProvider).error;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: \$error', style: const TextStyle(color: Colors.white)), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text(
+            'Error: $error',
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -62,18 +68,27 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   if (!_isLogin)
                     TextField(
                       controller: _nameController,
-                      decoration: const InputDecoration(labelText: 'Display Name', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(
+                        labelText: 'Display Name',
+                        border: OutlineInputBorder(),
+                      ),
                     ),
                   if (!_isLogin) const SizedBox(height: 16),
                   TextField(
                     controller: _emailController,
-                    decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
+                    decoration: const InputDecoration(
+                      labelText: 'Email',
+                      border: OutlineInputBorder(),
+                    ),
                     keyboardType: TextInputType.emailAddress,
                   ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: _passwordController,
-                    decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder()),
+                    decoration: const InputDecoration(
+                      labelText: 'Password',
+                      border: OutlineInputBorder(),
+                    ),
                     obscureText: true,
                   ),
                   const SizedBox(height: 24),
@@ -82,14 +97,24 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     height: 50,
                     child: ElevatedButton(
                       onPressed: _submit,
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, foregroundColor: Colors.white),
-                      child: Text(_isLogin ? 'Sign In' : 'Sign Up', style: const TextStyle(fontSize: 18)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: Text(
+                        _isLogin ? 'Sign In' : 'Sign Up',
+                        style: const TextStyle(fontSize: 18),
+                      ),
                     ),
                   ),
                   TextButton(
                     onPressed: () => setState(() => _isLogin = !_isLogin),
-                    child: Text(_isLogin ? 'Need an account? Sign Up' : 'Already have an account? Sign In'),
-                  )
+                    child: Text(
+                      _isLogin
+                          ? 'Need an account? Sign Up'
+                          : 'Already have an account? Sign In',
+                    ),
+                  ),
                 ],
               ),
             ),

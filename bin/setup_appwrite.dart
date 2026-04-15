@@ -5,10 +5,10 @@ import 'package:dart_appwrite/enums.dart';
 // Example: dart run bin/setup_appwrite.dart YOUR_API_KEY
 void main(List<String> args) async {
   final apiKey =
-      'standard_9fb874aaf4e077a2caa7e92da579eb69e4eb613d3177baa3dd3865e76511d682799b89f81fc12078d5145cf0849257446d41d4655d2394ae21801b4500e718184c8b1bdc4160d9c04d69cbef1e7fd0f26fab4b30ffaa1ed821a38424f17ceed703dafeb4a2d403921b7853e917f4af2d6cf322c9677b3ae66492f989f3be0f48';
-  final endpoint = 'https://fra.cloud.appwrite.io/v1'; // From constants.dart
-  final projectId = '69d3fd73001e99d0133c'; // From constants.dart
-  final databaseId = '69d403a800137a099d8b'; // From constants.dart
+      'standard_e57aa65177f330a4b6e38d2ff31558c200c890321020c7a17d6bd2de4988639b207911cf47c08d47d48edc8d275912d6b3093351971da80145549778a1c2b0c0fedbcfa88c23f8a8aede1de56b928b575f6794e03f676a7c00e02449264cc7ec359bbc6d35987817e5a9e69a96451a4ca3f5645802d69a6b4039a8db24cfcebd';
+  final endpoint = 'https://sfo.cloud.appwrite.io/v1'; // From constants.dart
+  final projectId = '69a5e1210026a1ac2d68'; // From constants.dart
+  final databaseId = '69def663002af03d967e'; // From constants.dart
 
   final client = Client()
       .setEndpoint(endpoint)
@@ -244,7 +244,7 @@ void main(List<String> args) async {
       collectionId: 'teams',
       key: 'team_code_idx',
       type: IndexType.unique,
-      attributes: ['team_code'],
+      attributes: <String>['team_code'],
     );
     print(' - Index created.');
   } catch (e) {
