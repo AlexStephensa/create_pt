@@ -27,10 +27,16 @@ class HomeTab extends ConsumerWidget {
     };
 
     for (final score in roundState.teamRoundScores) {
-      if (score.userId != user.$id) continue;
+      final isCurrentUserScore =
+          score.userId == user.$id ||
+          (score.displayName.isNotEmpty && score.displayName == user.name);
+      if (!isCurrentUserScore) continue;
 
-      final roundType = roundTypeById[score.roundId];
-      if (roundType == null) continue;
+      // Use score-table data first so rows are still counted even if a round
+      // document is missing/unreadable. Doubles is reliably inferred by 50 shots.
+      final inferredType = score.totalShots == 50 ? 'doubles' : null;
+      final roundType =
+          inferredType ?? roundTypeById[score.roundId] ?? 'singles';
 
       if (roundType == 'singles') {
         sHits += score.hits;
@@ -89,7 +95,13 @@ class HomeTab extends ConsumerWidget {
           else
             ...roundState.teamRounds.map((r) {
               final myScore = roundState.teamRoundScores
-                  .where((s) => s.roundId == r.id && s.userId == user.$id)
+                  .where(
+                    (s) =>
+                        s.roundId == r.id &&
+                        (s.userId == user.$id ||
+                            (s.displayName.isNotEmpty &&
+                                s.displayName == user.name)),
+                  )
                   .firstOrNull;
               return Card(
                 margin: const EdgeInsets.only(bottom: 12),

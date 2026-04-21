@@ -91,17 +91,18 @@ class RoundNotifier extends StateNotifier<RoundState> {
           .whereType<Round>()
           .toList();
 
-      final roundsIds = rounds.map((e) => e.id).toList();
+      // Use raw document IDs so score loading doesn't depend on Round parsing.
+      final roundIds = roundDocuments.map((d) => d.$id).toList();
 
       List<RoundScore> allScores = [];
-      if (roundsIds.isNotEmpty) {
+      if (roundIds.isNotEmpty) {
         final scoreDocuments = <Document>[];
 
-        for (var i = 0; i < roundsIds.length; i += _maxEqualValuesPerQuery) {
-          final end = (i + _maxEqualValuesPerQuery < roundsIds.length)
+        for (var i = 0; i < roundIds.length; i += _maxEqualValuesPerQuery) {
+          final end = (i + _maxEqualValuesPerQuery < roundIds.length)
               ? i + _maxEqualValuesPerQuery
-              : roundsIds.length;
-          final roundIdsChunk = roundsIds.sublist(i, end);
+              : roundIds.length;
+          final roundIdsChunk = roundIds.sublist(i, end);
 
           final chunkDocuments = await _fetchAllDocuments(
             collectionId: AppwriteConstants.roundScoresCollection,

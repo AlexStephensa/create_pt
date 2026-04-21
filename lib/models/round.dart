@@ -16,10 +16,11 @@ class Round {
   factory Round.fromMap(Map<String, dynamic> map) {
     final createdAtValue = map['created_at'] ?? map['\$createdAt'];
     final createdAt = createdAtValue is String
-        ? DateTime.parse(createdAtValue)
+        ? DateTime.tryParse(createdAtValue) ??
+              DateTime.fromMillisecondsSinceEpoch(0)
         : createdAtValue is DateTime
-            ? createdAtValue
-            : DateTime.fromMillisecondsSinceEpoch(0);
+        ? createdAtValue
+        : DateTime.fromMillisecondsSinceEpoch(0);
 
     return Round(
       id: map['\$id'] ?? '',
