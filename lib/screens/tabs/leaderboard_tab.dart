@@ -23,32 +23,36 @@ class _LeaderboardTabState extends ConsumerState<LeaderboardTab> {
     }
 
     // Calculate stats
-    Map<String, Map<String, int>> userStats =
-        {}; // userId -> {hits: x, total: y}
+    Map<String, Map<String, int>> userStats = {}; // userId -> {hits: x, total: y}
 
     for (var m in teamState.currentTeamMembers) {
       userStats[m.userId] = {'hits': 0, 'total': 0};
     }
 
+    // Create a map for quick round lookup
+    final roundMap = {for (var r in roundState.teamRounds) r.id: r};
+
     for (var score in roundState.teamRoundScores) {
-      final round = roundState.teamRounds.firstWhere(
-        (r) => r.id == score.roundId,
-        orElse: () => throw Exception(),
-      );
-      if (round.roundType == _selectedType) {
+      final round = roundMap[score.roundId];
+      // Only count if round exists and matches selected type
+      if (round != null && round.roundType == _selectedType) {
         if (userStats.containsKey(score.userId)) {
           userStats[score.userId]!['hits'] =
               userStats[score.userId]!['hits']! + score.hits;
           userStats[score.userId]!['total'] =
               userStats[score.userId]!['total']! + score.totalShots;
+        } else {
+          // If member is not in currentTeamMembers (maybe left team?), we can still track them if needed
+          // but for leaderboard we usually only show current members.
         }
       }
     }
 
     List<Map<String, dynamic>> ranks = [];
     for (var m in teamState.currentTeamMembers) {
-      final hits = userStats[m.userId]!['hits']!;
-      final total = userStats[m.userId]!['total']!;
+      final stats = userStats[m.userId]!;
+      final hits = stats['hits']!;
+      final total = stats['total']!;
       final pct = total > 0 ? (hits / total) * 100 : 0.0;
       ranks.add({
         'name': m.displayName,
@@ -95,10 +99,10 @@ class _LeaderboardTabState extends ConsumerState<LeaderboardTab> {
                     backgroundColor: index == 0
                         ? Colors.amber
                         : (index == 1
-                              ? Colors.grey[300]
-                              : (index == 2
-                                    ? Colors.brown[300]
-                                    : Colors.blueGrey)),
+                            ? Colors.grey[300]
+                            : (index == 2
+                                ? Colors.brown[300]
+                                : Colors.blueGrey)),
                     child: Text(
                       '${index + 1}',
                       style: const TextStyle(color: Colors.black),

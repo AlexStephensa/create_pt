@@ -22,31 +22,24 @@ class HomeTab extends ConsumerWidget {
     int dHits = 0, dMiss = 0;
     int hHits = 0, hMiss = 0;
 
-    final roundTypeById = {
-      for (final round in roundState.teamRounds) round.id: round.roundType,
-    };
+    // Create a map for quick round lookup to avoid O(n^2) and potential crashes
+    final roundMap = {for (var r in roundState.teamRounds) r.id: r};
 
-    for (final score in roundState.teamRoundScores) {
-      final isCurrentUserScore =
-          score.userId == user.$id ||
-          (score.displayName.isNotEmpty && score.displayName == user.name);
-      if (!isCurrentUserScore) continue;
-
-      // Use score-table data first so rows are still counted even if a round
-      // document is missing/unreadable. Doubles is reliably inferred by 50 shots.
-      final inferredType = score.totalShots == 50 ? 'doubles' : null;
-      final roundType =
-          inferredType ?? roundTypeById[score.roundId] ?? 'singles';
-
-      if (roundType == 'singles') {
-        sHits += score.hits;
-        sMiss += score.misses;
-      } else if (roundType == 'doubles') {
-        dHits += score.hits;
-        dMiss += score.misses;
-      } else if (roundType == 'handicap') {
-        hHits += score.hits;
-        hMiss += score.misses;
+    for (var score in roundState.teamRoundScores) {
+      if (score.userId == user.$id) {
+        final round = roundMap[score.roundId];
+        if (round != null) {
+          if (round.roundType == 'singles') {
+            sHits += score.hits;
+            sMiss += score.misses;
+          } else if (round.roundType == 'doubles') {
+            dHits += score.hits;
+            dMiss += score.misses;
+          } else if (round.roundType == 'handicap') {
+            hHits += score.hits;
+            hMiss += score.misses;
+          }
+        }
       }
     }
 
@@ -95,13 +88,7 @@ class HomeTab extends ConsumerWidget {
           else
             ...roundState.teamRounds.map((r) {
               final myScore = roundState.teamRoundScores
-                  .where(
-                    (s) =>
-                        s.roundId == r.id &&
-                        (s.userId == user.$id ||
-                            (s.displayName.isNotEmpty &&
-                                s.displayName == user.name)),
-                  )
+                  .where((s) => s.roundId == r.id && s.userId == user.$id)
                   .firstOrNull;
               return Card(
                 margin: const EdgeInsets.only(bottom: 12),

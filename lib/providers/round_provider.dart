@@ -1,5 +1,4 @@
 import 'package:appwrite/appwrite.dart';
-import 'package:appwrite/models.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants.dart';
 import '../models/round.dart';
@@ -42,81 +41,54 @@ class RoundState {
 
 class RoundNotifier extends StateNotifier<RoundState> {
   final AppwriteService _appwriteService;
-  static const int _maxEqualValuesPerQuery = 100;
 
   RoundNotifier(this._appwriteService) : super(RoundState());
-
-  Future<List<Document>> _fetchAllDocuments({
-    required String collectionId,
-    List<String> queries = const [],
-    int batchSize = 100,
-  }) async {
-    final allDocuments = <Document>[];
-    var offset = 0;
-
-    while (true) {
-      final result = await _appwriteService.listDocuments(
-        collectionId: collectionId,
-        queries: [...queries, Query.limit(batchSize), Query.offset(offset)],
-      );
-
-      allDocuments.addAll(result.documents);
-
-      if (result.documents.length < batchSize) break;
-      offset += batchSize;
-    }
-
-    return allDocuments;
-  }
 
   Future<void> loadRounds(String teamId) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final roundDocuments = await _fetchAllDocuments(
+      final roundsResult = await _appwriteService.listDocuments(
         collectionId: AppwriteConstants.roundsCollection,
         queries: [
           Query.equal('team_id', teamId),
           Query.orderDesc('created_at'),
+          Query.limit(100),
         ],
       );
 
-      final rounds = roundDocuments
+      final rounds = roundsResult.documents
           .map((d) {
             try {
-              return Round.fromMap({...d.data, '\$id': d.$id});
-            } catch (_) {
+              final map = Map<String, dynamic>.from(d.data);
+              map['\$id'] = d.$id;
+              map['\$createdAt'] = d.$createdAt;
+              return Round.fromMap(map);
+            } catch (e) {
               return null;
             }
           })
           .whereType<Round>()
           .toList();
 
-      // Use raw document IDs so score loading doesn't depend on Round parsing.
-      final roundIds = roundDocuments.map((d) => d.$id).toList();
-
+      final roundsIds = rounds.map((e) => e.id).where((id) => id.isNotEmpty).toList();
+      
       List<RoundScore> allScores = [];
-      if (roundIds.isNotEmpty) {
-        final scoreDocuments = <Document>[];
-
-        for (var i = 0; i < roundIds.length; i += _maxEqualValuesPerQuery) {
-          final end = (i + _maxEqualValuesPerQuery < roundIds.length)
-              ? i + _maxEqualValuesPerQuery
-              : roundIds.length;
-          final roundIdsChunk = roundIds.sublist(i, end);
-
-          final chunkDocuments = await _fetchAllDocuments(
-            collectionId: AppwriteConstants.roundScoresCollection,
-            queries: [Query.equal('round_id', roundIdsChunk)],
-          );
-
-          scoreDocuments.addAll(chunkDocuments);
-        }
-
-        allScores = scoreDocuments
+      if (roundsIds.isNotEmpty) {
+        // Appwrite limit is usually 25, we increase to 500 to get scores for all 100 rounds
+        final scoresResult = await _appwriteService.listDocuments(
+          collectionId: AppwriteConstants.roundScoresCollection,
+          queries: [
+            Query.equal('round_id', roundsIds),
+            Query.limit(500),
+          ],
+        );
+        allScores = scoresResult.documents
             .map((d) {
               try {
-                return RoundScore.fromMap({...d.data, '\$id': d.$id});
-              } catch (_) {
+                final map = Map<String, dynamic>.from(d.data);
+                map['\$id'] = d.$id;
+                return RoundScore.fromMap(map);
+              } catch (e) {
                 return null;
               }
             })
@@ -155,22 +127,16 @@ class RoundNotifier extends StateNotifier<RoundState> {
       );
 
       for (var score in scores) {
+        final scoreData = score.toMap();
+        scoreData['round_id'] = roundId;
+        
         await _appwriteService.createDocument(
           collectionId: AppwriteConstants.roundScoresCollection,
           documentId: ID.unique(),
-          data: {
-            'round_id': roundId,
-            'user_id': score.userId,
-            'display_name': score.displayName,
-            'shots': score.shots,
-            'total_shots': score.totalShots,
-            'hits': score.hits,
-            'misses': score.misses,
-          },
+          data: scoreData,
         );
       }
 
-      // Reload
       await loadRounds(teamId);
       return true;
     } catch (e) {
