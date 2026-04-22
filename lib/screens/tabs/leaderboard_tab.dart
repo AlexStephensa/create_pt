@@ -1,5 +1,7 @@
+import 'package:appwrite/models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/team_provider.dart';
 import '../../providers/round_provider.dart';
 
@@ -86,7 +88,7 @@ class _LeaderboardTabState extends ConsumerState<LeaderboardTab> {
               if (teamState.currentTeam != null) {
                 await ref
                     .read(roundProvider.notifier)
-                    .loadRounds(teamState.currentTeam!.id);
+                    .loadRounds(teamState.currentTeam!.id, ref.read(authProvider).user!.userId);
               }
             },
             child: ListView.builder(
@@ -128,4 +130,8 @@ class _LeaderboardTabState extends ConsumerState<LeaderboardTab> {
       ],
     );
   }
+}
+
+extension on User {
+  String get userId => this.$id;
 }

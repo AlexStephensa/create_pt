@@ -24,7 +24,7 @@ class _TeamDashboardScreenState extends ConsumerState<TeamDashboardScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(roundProvider.notifier).loadRounds(widget.teamId);
+      ref.read(roundProvider.notifier).loadRounds(widget.teamId, ref.read(authProvider).user!.$id);
     });
   }
 

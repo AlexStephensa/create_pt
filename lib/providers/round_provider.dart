@@ -44,55 +44,61 @@ class RoundNotifier extends StateNotifier<RoundState> {
 
   RoundNotifier(this._appwriteService) : super(RoundState());
 
-  Future<void> loadRounds(String teamId) async {
+  Future<void> loadRounds(String teamId, String userId) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final roundsResult = await _appwriteService.listDocuments(
-        collectionId: AppwriteConstants.roundsCollection,
+      // Step 1: Fetch this user's scores directly
+      final scoresResult = await _appwriteService.listDocuments(
+        collectionId: AppwriteConstants.roundScoresCollection,
         queries: [
-          Query.equal('team_id', teamId),
-          Query.orderDesc('created_at'),
-          Query.limit(100),
+          Query.equal('user_id', userId),
+          Query.limit(500),
         ],
       );
 
-      final rounds = roundsResult.documents
+      final allScores = scoresResult.documents
           .map((d) {
-            try {
-              final map = Map<String, dynamic>.from(d.data);
-              map['\$id'] = d.$id;
-              map['\$createdAt'] = d.$createdAt;
-              return Round.fromMap(map);
-            } catch (e) {
-              return null;
-            }
-          })
-          .whereType<Round>()
+        try {
+          final map = Map<String, dynamic>.from(d.data);
+          map['\$id'] = d.$id;
+          return RoundScore.fromMap(map);
+        } catch (e) {
+          return null;
+        }
+      })
+          .whereType<RoundScore>()
           .toList();
 
-      final roundsIds = rounds.map((e) => e.id).where((id) => id.isNotEmpty).toList();
-      
-      List<RoundScore> allScores = [];
-      if (roundsIds.isNotEmpty) {
-        // Appwrite limit is usually 25, we increase to 500 to get scores for all 100 rounds
-        final scoresResult = await _appwriteService.listDocuments(
-          collectionId: AppwriteConstants.roundScoresCollection,
+      // Step 2: Fetch rounds by the round IDs that appear in the user's scores
+      final roundIds = allScores
+          .map((s) => s.roundId)
+          .where((id) => id.isNotEmpty)
+          .toSet()
+          .toList();
+
+      List<Round> rounds = [];
+      if (roundIds.isNotEmpty) {
+        final roundsResult = await _appwriteService.listDocuments(
+          collectionId: AppwriteConstants.roundsCollection,
           queries: [
-            Query.equal('round_id', roundsIds),
+            Query.equal('\$id', roundIds),
+            Query.orderDesc('created_at'),
             Query.limit(500),
           ],
         );
-        allScores = scoresResult.documents
+
+        rounds = roundsResult.documents
             .map((d) {
-              try {
-                final map = Map<String, dynamic>.from(d.data);
-                map['\$id'] = d.$id;
-                return RoundScore.fromMap(map);
-              } catch (e) {
-                return null;
-              }
-            })
-            .whereType<RoundScore>()
+          try {
+            final map = Map<String, dynamic>.from(d.data);
+            map['\$id'] = d.$id;
+            map['\$createdAt'] = d.$createdAt;
+            return Round.fromMap(map);
+          } catch (e) {
+            return null;
+          }
+        })
+            .whereType<Round>()
             .toList();
       }
 
@@ -137,7 +143,7 @@ class RoundNotifier extends StateNotifier<RoundState> {
         );
       }
 
-      await loadRounds(teamId);
+      await loadRounds(teamId, scoredBy);
       return true;
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
