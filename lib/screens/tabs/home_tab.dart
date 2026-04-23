@@ -25,10 +25,10 @@ class HomeTab extends ConsumerWidget {
     // Create a map for quick round lookup to avoid O(n^2) and potential crashes
     final roundMap = {for (var r in roundState.teamRounds) r.id: r};
     // Add this right after the roundMap line
-    print('DEBUG UI: user.\$id = ${user.$id}');
-    print('DEBUG UI: total scores in state = ${roundState.teamRoundScores.length}');
+    //print('DEBUG UI: user.\$id = ${user.$id}');
+    //print('DEBUG UI: total scores in state = ${roundState.teamRoundScores.length}');
     for (var score in roundState.teamRoundScores) {
-      print('DEBUG UI: score.userId=${score.userId} == user.\$id=${user.$id} ? ${score.userId == user.$id}');
+     // print('DEBUG UI: score.userId=${score.userId} == user.\$id=${user.$id} ? ${score.userId == user.$id}');
     }
     for (var score in roundState.teamRoundScores) {
       if (score.userId == user.$id) {

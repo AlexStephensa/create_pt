@@ -184,7 +184,7 @@ class TeamNotifier extends StateNotifier<TeamState> {
       final members = result.documents.map((d) => TeamMember.fromMap(d.data)).toList();
       state = state.copyWith(currentTeamMembers: members);
     } catch (e) {
-      print(e);
+      //print(e);
     }
   }
 
