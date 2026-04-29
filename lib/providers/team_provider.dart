@@ -77,7 +77,9 @@ class TeamNotifier extends StateNotifier<TeamState> {
         queries: [Query.equal('\$id', teamIds)],
       );
 
-      final teams = teamsResult.documents.map((d) => Team.fromMap(d.data)).toList();
+      final teams = teamsResult.documents
+          .map((d) => Team.fromMap(d.data))
+          .toList();
       state = state.copyWith(isLoading: false, myTeams: teams);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -145,7 +147,7 @@ class TeamNotifier extends StateNotifier<TeamState> {
         collectionId: AppwriteConstants.teamMembersCollection,
         queries: [
           Query.equal('team_id', teamId),
-          Query.equal('user_id', user.$id)
+          Query.equal('user_id', user.$id),
         ],
       );
 
@@ -181,7 +183,9 @@ class TeamNotifier extends StateNotifier<TeamState> {
         queries: [Query.equal('team_id', teamId)],
       );
 
-      final members = result.documents.map((d) => TeamMember.fromMap(d.data)).toList();
+      final members = result.documents
+          .map((d) => TeamMember.fromMap(d.data))
+          .toList();
       state = state.copyWith(currentTeamMembers: members);
     } catch (e) {
       //print(e);
@@ -191,7 +195,8 @@ class TeamNotifier extends StateNotifier<TeamState> {
   String _generateTeamCode() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     Random rnd = Random();
-    return String.fromCharCodes(Iterable.generate(
-        6, (_) => chars.codeUnitAt(rnd.nextInt(chars.length))));
+    return String.fromCharCodes(
+      Iterable.generate(6, (_) => chars.codeUnitAt(rnd.nextInt(chars.length))),
+    );
   }
 }

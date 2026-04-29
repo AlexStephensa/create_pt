@@ -56,7 +56,7 @@ class RoundScore {
       'round_id': roundId,
       'user_id': userId,
       'display_name': displayName,
-      'shots': json.encode(shots),
+      'shots': shots,
       'total_shots': totalShots,
       'hits': hits,
       'misses': misses,
